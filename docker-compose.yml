@@ -1,0 +1,48 @@
+# DayPilot — chạy Postgres + API trên máy bạn
+# Cách dùng (tại thư mục gốc repo):
+#   docker compose up --build
+# API: http://localhost:3000  |  Swagger: http://localhost:3000/api
+# Frontend vẫn chạy riêng: cd frontend && npm run dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: daypilot-db
+    environment:
+      POSTGRES_USER: daypilot
+      POSTGRES_PASSWORD: daypilot_local
+      POSTGRES_DB: daypilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - daypilot_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U daypilot -d daypilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: daypilot-api
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:5173
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: daypilot
+      DB_PASSWORD: daypilot_local
+      DB_DATABASE: daypilot
+      # Dev/local: true. Production: false + dùng migration.
+      DB_SYNCHRONIZE: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  daypilot_pgdata:
