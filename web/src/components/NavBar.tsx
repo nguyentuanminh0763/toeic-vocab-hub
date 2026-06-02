@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const links = [
   { href: '/',          label: 'Flashcard' },
+  { href: '/quiz',      label: 'Quiz'      },
   { href: '/words',     label: 'Từ vựng'   },
   { href: '/progress',  label: 'Tiến độ'   },
 ];
