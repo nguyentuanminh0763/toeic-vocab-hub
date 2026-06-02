@@ -310,6 +310,7 @@ export default function QuizPage() {
       {screen === 'setup' && <SetupScreen onStart={startQuiz} />}
       {screen === 'quiz' && questions[qIndex] && (
         <QuestionScreen
+          key={qIndex}
           question={questions[qIndex]}
           index={qIndex}
           total={questions.length}
