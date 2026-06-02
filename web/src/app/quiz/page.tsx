@@ -112,11 +112,13 @@ function SetupScreen({ onStart }: { onStart: (mode: QuizMode, count: number) => 
 
 // ── Question screen ─────────────────────────────────────────────────────────
 function QuestionScreen({
-  question, index, total, onAnswer,
+  question, index, total, correctCount, wrongCount, onAnswer,
 }: {
   question: QuizQuestion;
   index: number;
   total: number;
+  correctCount: number;
+  wrongCount: number;
   onAnswer: (correct: boolean) => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
@@ -147,6 +149,22 @@ function QuestionScreen({
           <div className="h-full bg-[#534AB7] rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
         </div>
         <span className="text-xs text-gray-400 shrink-0">{index}/{total}</span>
+      </div>
+
+      {/* Live score */}
+      <div className="flex gap-2">
+        <div className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#E1F5EE]">
+          <span className="text-base font-extrabold text-[#085041]">{correctCount}</span>
+          <span className="text-xs text-[#085041] opacity-70">Đúng</span>
+        </div>
+        <div className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#FAECE7]">
+          <span className="text-base font-extrabold text-[#712B13]">{wrongCount}</span>
+          <span className="text-xs text-[#712B13] opacity-70">Sai</span>
+        </div>
+        <div className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gray-100">
+          <span className="text-base font-extrabold text-gray-500">{total - index}</span>
+          <span className="text-xs text-gray-400">Còn lại</span>
+        </div>
       </div>
 
       {/* Word card */}
@@ -314,6 +332,8 @@ export default function QuizPage() {
           question={questions[qIndex]}
           index={qIndex}
           total={questions.length}
+          correctCount={result.correct}
+          wrongCount={result.wrong.length}
           onAnswer={handleAnswer}
         />
       )}
