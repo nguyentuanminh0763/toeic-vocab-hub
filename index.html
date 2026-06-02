@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOEIC ETS 2026 — Test 1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple: #534AB7;
+    --purple-light: #EAE8F9;
+    --green-bg: #E1F5EE;
+    --green-text: #085041;
+    --green-border: #9FE1CB;
+    --red-bg: #FAECE7;
+    --red-text: #712B13;
+    --card-bg: #fff;
+    --body-bg: #F5F4FC;
+    --text-primary: #1a1a2e;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(83,74,183,0.10);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--body-bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 0.3px;
+  }
+  .mode-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: var(--purple-light);
+    color: var(--purple);
+  }
+  .mode-badge.hard { background: var(--red-bg); color: var(--red-text); }
+
+  /* ── Stats bar ── */
+  .stats {
+    width: 100%;
+    max-width: 480px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .stat {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 8px 4px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .stat-val { font-size: 18px; font-weight: 700; color: var(--purple); }
+  .stat-lbl { font-size: 10px; color: var(--text-secondary); margin-top: 1px; }
+  .stat.ok .stat-val { color: var(--green-text); }
+  .stat.hard .stat-val { color: var(--red-text); }
+
+  /* ── Progress ── */
+  .progress-wrap {
+    width: 100%;
+    max-width: 480px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 99px;
+    transition: width .3s ease;
+  }
+
+  /* ── Card container (3D flip) ── */
+  .card-wrap {
+    width: 100%;
+    max-width: 480px;
+    perspective: 1000px;
+    margin-bottom: 16px;
+    cursor: pointer;
+  }
+  .card-inner {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    transform-style: preserve-3d;
+    transition: transform .45s cubic-bezier(.4,0,.2,1);
+  }
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px 24px 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-back {
+    transform: rotateY(180deg);
+    border: 2px solid var(--green-border);
+  }
+
+  /* front */
+  .card-counter {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+  .card-word-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .card-word {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.15;
+    flex: 1;
+    word-break: break-word;
+  }
+  .btn-speak {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--purple);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: background .15s, transform .1s;
+    margin-top: 4px;
+  }
+  .btn-speak:hover { background: #443fa0; }
+  .btn-speak:active { transform: scale(.93); }
+  .card-ipa {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: var(--purple-light);
+    color: var(--purple);
+    margin-bottom: 16px;
+  }
+  .card-hint {
+    margin-top: auto;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    opacity: .7;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* back */
+  .card-meaning {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--green-text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .card-example {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.6;
+    flex: 1;
+  }
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn-action {
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn-action:active { transform: scale(.96); }
+  .btn-hard {
+    background: var(--red-bg);
+    color: var(--red-text);
+  }
+  .btn-ok {
+    background: var(--green-bg);
+    color: var(--green-text);
+  }
+
+  /* ── Nav row ── */
+  .nav-row {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .btn-nav {
+    flex: 1;
+    padding: 11px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--card-bg);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-nav:hover { border-color: var(--purple); color: var(--purple); }
+  .btn-mode {
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: none;
+    background: var(--purple);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .btn-mode:hover { background: #443fa0; }
+
+  /* ── Keyboard hint ── */
+  .kb-hint {
+    width: 100%;
+    max-width: 480px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+    opacity: .6;
+  }
+  .kb-hint span {
+    display: inline-block;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin: 0 2px;
+    font-family: monospace;
+  }
+
+  /* ── Done screen ── */
+  #done-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 40px 24px;
+    text-align: center;
+    gap: 12px;
+  }
+  #done-screen.visible { display: flex; }
+  .done-icon { font-size: 48px; margin-bottom: 4px; }
+  .done-title { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+  .done-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+  .done-stats {
+    display: flex;
+    gap: 16px;
+    margin: 8px 0;
+  }
+  .done-stat {
+    flex: 1;
+    padding: 14px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+  }
+  .done-stat.ok { background: var(--green-bg); color: var(--green-text); }
+  .done-stat.hard { background: var(--red-bg); color: var(--red-text); }
+  .done-stat-val { font-size: 28px; }
+  .done-stat-lbl { font-size: 11px; margin-top: 2px; opacity: .8; }
+  .btn-restart {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--purple);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-restart:hover { background: #443fa0; }
+  .btn-review-hard {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 2px solid var(--red-text);
+    background: var(--red-bg);
+    color: var(--red-text);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .btn-review-hard:disabled { opacity: .4; cursor: not-allowed; }
+
+  #study-area { width: 100%; display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+
+<div id="study-area">
+  <div class="header">
+    <h1>TOEIC ETS 2026 — Test 1</h1>
+    <span class="mode-badge" id="mode-badge">Tất cả</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val" id="stat-total">80</div>
+      <div class="stat-lbl">Tổng</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="stat-seen">0</div>
+      <div class="stat-lbl">Đã xem</div>
+    </div>
+    <div class="stat ok">
+      <div class="stat-val" id="stat-ok">0</div>
+      <div class="stat-lbl">Nhớ rồi</div>
+    </div>
+    <div class="stat hard">
+      <div class="stat-val" id="stat-hard">0</div>
+      <div class="stat-lbl">Cần ôn</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <div class="card-wrap" id="card-wrap" onclick="flipCard()">
+    <div class="card-inner" id="card-inner">
+      <!-- Front -->
+      <div class="card-face card-front">
+        <div class="card-counter" id="card-counter">1 / 80</div>
+        <div class="card-word-row">
+          <div class="card-word" id="card-word">—</div>
+          <button class="btn-speak" id="btn-speak" onclick="event.stopPropagation(); speak()" title="Phát âm (R)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          </button>
+        </div>
+        <div class="card-ipa" id="card-ipa">/—/</div>
+        <span class="badge" id="card-form">—</span>
+        <div class="card-hint">Nhấn thẻ để xem nghĩa &nbsp;·&nbsp; <span style="opacity:.5">Space</span></div>
+      </div>
+      <!-- Back -->
+      <div class="card-face card-back">
+        <div class="card-counter" id="card-counter-back">1 / 80</div>
+        <div class="card-word-row">
+          <div class="card-word" id="card-word-back">—</div>
+          <button class="btn-speak" onclick="event.stopPropagation(); speak()" title="Phát âm (R)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          </button>
+        </div>
+        <div class="card-meaning" id="card-meaning">—</div>
+        <div class="card-example" id="card-example">—</div>
+        <div class="action-row">
+          <button class="btn-action btn-hard" onclick="event.stopPropagation(); markCard('hard')">&#10007; Cần ôn</button>
+          <button class="btn-action btn-ok" onclick="event.stopPropagation(); markCard('ok')">&#10003; Nhớ rồi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn-nav" onclick="prevCard()">&#8592; Trước</button>
+    <button class="btn-nav" onclick="skipCard()">Bỏ qua &#8594;</button>
+    <button class="btn-mode" id="btn-mode" onclick="toggleMode()">Ôn từ khó</button>
+  </div>
+
+  <div class="kb-hint">
+    <span>Space</span> lật &nbsp;
+    <span>&#8592;</span> Cần ôn &nbsp;
+    <span>&#8594;</span> Nhớ rồi &nbsp;
+    <span>R</span> phát âm
+  </div>
+</div>
+
+<!-- Done screen -->
+<div id="done-screen">
+  <div class="done-icon">&#127881;</div>
+  <div class="done-title" id="done-title">Hoàn thành!</div>
+  <div class="done-sub" id="done-sub">Bạn đã xem qua tất cả thẻ.</div>
+  <div class="done-stats">
+    <div class="done-stat ok">
+      <div class="done-stat-val" id="done-ok">0</div>
+      <div class="done-stat-lbl">Nhớ rồi</div>
+    </div>
+    <div class="done-stat hard">
+      <div class="done-stat-val" id="done-hard">0</div>
+      <div class="done-stat-lbl">Cần ôn</div>
+    </div>
+  </div>
+  <button class="btn-restart" onclick="restartAll()">Học lại từ đầu</button>
+  <button class="btn-review-hard" id="btn-review-hard" onclick="startHardMode()">Ôn lại từ khó</button>
+</div>
+
+<script>
+const STORAGE_KEY = 'toeic_test1_progress';
+
+const words = [
+  { id: 1,  word: "take place",      wordForm: "verb phrase",   ipa: "/teɪk pleɪs/",             meaning: "diễn ra",                         example: "The meeting will take place in the main conference room." },
+  { id: 2,  word: "attendee",        wordForm: "noun",          ipa: "/ˌæt.enˈdiː/",             meaning: "người tham dự",                   example: "All attendees must sign in at the front desk." },
+  { id: 3,  word: "antique",         wordForm: "noun / adj",    ipa: "/ænˈtiːk/",                meaning: "đồ cổ",                           example: "The hotel lobby is decorated with antique furniture." },
+  { id: 4,  word: "organization",    wordForm: "noun",          ipa: "/ˌɔːr.gən.aɪˈzeɪ.ʃən/",   meaning: "tổ chức",                         example: "She works for a nonprofit organization." },
+  { id: 5,  word: "suspicious",      wordForm: "adjective",     ipa: "/səˈspɪʃ.əs/",             meaning: "đáng ngờ",                        example: "The manager found the report suspicious." },
+  { id: 6,  word: "vary",            wordForm: "verb",          ipa: "/ˈver.i/",                 meaning: "thay đổi, khác nhau",             example: "Prices may vary depending on the season." },
+  { id: 7,  word: "inventory",       wordForm: "noun",          ipa: "/ˈɪn.vən.tɔːr.i/",        meaning: "hàng tồn kho",                    example: "The store checks its inventory every month." },
+  { id: 8,  word: "expand",          wordForm: "verb",          ipa: "/ɪkˈspænd/",               meaning: "mở rộng",                         example: "The company plans to expand its business overseas." },
+  { id: 9,  word: "solicit",         wordForm: "verb",          ipa: "/səˈlɪs.ɪt/",              meaning: "yêu cầu, kêu gọi",                example: "The company solicited feedback from customers." },
+  { id: 10, word: "intend",          wordForm: "verb",          ipa: "/ɪnˈtend/",                meaning: "có ý định",                       example: "We intend to complete the project by June." },
+  { id: 11, word: "prevent",         wordForm: "verb",          ipa: "/prɪˈvent/",               meaning: "ngăn chặn",                       example: "This software helps prevent data loss." },
+  { id: 12, word: "aim",             wordForm: "verb / noun",   ipa: "/eɪm/",                    meaning: "mục tiêu, nhắm đến",              example: "The campaign aims to attract new clients." },
+  { id: 13, word: "qualified",       wordForm: "adjective",     ipa: "/ˈkwɑː.lə.faɪd/",         meaning: "đủ trình độ",                     example: "Only qualified applicants will be contacted." },
+  { id: 14, word: "resident",        wordForm: "noun",          ipa: "/ˈrez.ɪ.dənt/",            meaning: "cư dân",                          example: "Local residents attended the community meeting." },
+  { id: 15, word: "agreement",       wordForm: "noun",          ipa: "/əˈɡriː.mənt/",            meaning: "hợp đồng, thỏa thuận",            example: "Both sides signed the agreement yesterday." },
+  { id: 16, word: "opposition",      wordForm: "noun",          ipa: "/ˌɑː.pəˈzɪʃ.ən/",          meaning: "sự phản đối",                     example: "The proposal faced strong opposition." },
+  { id: 17, word: "extensive",       wordForm: "adjective",     ipa: "/ɪkˈsten.sɪv/",            meaning: "rộng rãi, mở rộng",              example: "The company conducted extensive market research." },
+  { id: 18, word: "guarantee",       wordForm: "verb / noun",   ipa: "/ˌɡær.ənˈtiː/",            meaning: "bảo đảm",                         example: "The product comes with a one-year guarantee." },
+  { id: 19, word: "supplier",        wordForm: "noun",          ipa: "/səˈplaɪ.ər/",             meaning: "nhà cung cấp",                    example: "We contacted a new supplier for office equipment." },
+  { id: 20, word: "landscaping",     wordForm: "noun",          ipa: "/ˈlænd.skeɪ.pɪŋ/",        meaning: "thiết kế cảnh quan",              example: "The company hired a firm for garden landscaping." },
+  { id: 21, word: "suggestion",      wordForm: "noun",          ipa: "/səˈdʒes.tʃən/",           meaning: "đề xuất",                         example: "We welcome any suggestions to improve customer service." },
+  { id: 22, word: "expertise",       wordForm: "noun",          ipa: "/ˌek.spɜːrˈtiːz/",        meaning: "chuyên môn",                      example: "She has expertise in financial reporting." },
+  { id: 23, word: "competitor",      wordForm: "noun",          ipa: "/kəmˈpet.ɪ.tər/",          meaning: "đối thủ cạnh tranh",              example: "The company is facing strong competitors in the market." },
+  { id: 24, word: "anniversary",     wordForm: "noun",          ipa: "/ˌæn.ɪˈvɜːr.sər.i/",      meaning: "kỷ niệm",                         example: "The firm celebrated its 10th anniversary last week." },
+  { id: 25, word: "dedication",      wordForm: "noun",          ipa: "/ˌded.ɪˈkeɪ.ʃən/",         meaning: "sự cống hiến",                    example: "Her dedication to work impressed the manager." },
+  { id: 26, word: "loyalty",         wordForm: "noun",          ipa: "/ˈlɔɪ.əl.ti/",             meaning: "sự trung thành",                  example: "Customer loyalty is important for long-term success." },
+  { id: 27, word: "contribute",      wordForm: "verb",          ipa: "/kənˈtrɪb.juːt/",          meaning: "đóng góp",                        example: "All staff are encouraged to contribute ideas." },
+  { id: 28, word: "gratitude",       wordForm: "noun",          ipa: "/ˈɡræt.ɪ.tuːd/",          meaning: "lòng biết ơn",                    example: "The director expressed his gratitude to the team." },
+  { id: 29, word: "refine",          wordForm: "verb",          ipa: "/rɪˈfaɪn/",                meaning: "cải tiến",                        example: "The design was refined after customer feedback." },
+  { id: 30, word: "spacious",        wordForm: "adjective",     ipa: "/ˈspeɪ.ʃəs/",             meaning: "rộng rãi",                        example: "The new office is bright and spacious." },
+  { id: 31, word: "go through",      wordForm: "phrasal verb",  ipa: "/ɡoʊ θruː/",               meaning: "trải qua, xem xét",               example: "Please go through the report carefully." },
+  { id: 32, word: "various",         wordForm: "adjective",     ipa: "/ˈver.i.əs/",              meaning: "đa dạng",                         example: "The seminar covers various business topics." },
+  { id: 33, word: "secure",          wordForm: "verb / adj",    ipa: "/sɪˈkjʊr/",                meaning: "đảm bảo; an toàn",                example: "The company hopes to secure more clients." },
+  { id: 34, word: "remove",          wordForm: "verb",          ipa: "/rɪˈmuːv/",                meaning: "loại bỏ",                         example: "Please remove outdated files from the system." },
+  { id: 35, word: "previous",        wordForm: "adjective",     ipa: "/ˈpriː.vi.əs/",            meaning: "trước đó",                        example: "Please refer to the previous email." },
+  { id: 36, word: "cooperation",     wordForm: "noun",          ipa: "/koʊˌɑː.pəˈreɪ.ʃən/",     meaning: "sự hợp tác",                      example: "Thank you for your cooperation." },
+  { id: 37, word: "upcoming",        wordForm: "adjective",     ipa: "/ˈʌpˌkʌm.ɪŋ/",            meaning: "sắp tới",                         example: "Details will be shared in the upcoming meeting." },
+  { id: 38, word: "charge",          wordForm: "verb / noun",   ipa: "/tʃɑːrdʒ/",                meaning: "tính phí; phí",                   example: "The hotel does not charge extra for breakfast." },
+  { id: 39, word: "assign",          wordForm: "verb",          ipa: "/əˈsaɪn/",                 meaning: "phân công",                       example: "The manager will assign tasks tomorrow." },
+  { id: 40, word: "administrator",   wordForm: "noun",          ipa: "/ədˈmɪn.ɪ.streɪ.tər/",    meaning: "quản trị viên",                   example: "Please contact the system administrator for help." },
+  { id: 41, word: "new hire",        wordForm: "noun",          ipa: "/nuː haɪr/",               meaning: "nhân viên mới",                   example: "The new hires will attend orientation on Monday." },
+  { id: 42, word: "promote",         wordForm: "verb",          ipa: "/prəˈmoʊt/",               meaning: "thăng chức; quảng bá",            example: "The company plans to promote the new service." },
+  { id: 43, word: "advertise",       wordForm: "verb",          ipa: "/ˈæd.vər.taɪz/",           meaning: "quảng cáo",                       example: "The product was advertised online." },
+  { id: 44, word: "coordinator",     wordForm: "noun",          ipa: "/koʊˈɔːr.də.neɪ.tər/",    meaning: "người điều phối",                 example: "Please contact the event coordinator for details." },
+  { id: 45, word: "telescope",       wordForm: "noun",          ipa: "/ˈtel.ɪ.skoʊp/",           meaning: "kính thiên văn",                  example: "The museum displayed an old telescope." },
+  { id: 46, word: "revise",          wordForm: "verb",          ipa: "/rɪˈvaɪz/",                meaning: "sửa đổi",                         example: "The schedule has been revised." },
+  { id: 47, word: "representative",  wordForm: "noun",          ipa: "/ˌrep.rɪˈzen.tə.tɪv/",    meaning: "đại diện",                        example: "A sales representative visited our office." },
+  { id: 48, word: "inquiry",         wordForm: "noun",          ipa: "/ˈɪŋ.kwɪr.i/",             meaning: "sự hỏi, yêu cầu thông tin",       example: "We received an inquiry about pricing." },
+  { id: 49, word: "general",         wordForm: "adjective",     ipa: "/ˈdʒen.ər.əl/",            meaning: "chung, tổng quát",                example: "This email contains general information." },
+  { id: 50, word: "release",         wordForm: "verb / noun",   ipa: "/rɪˈliːs/",                meaning: "phát hành",                       example: "The company will release the report tomorrow." },
+  { id: 51, word: "indicate",        wordForm: "verb",          ipa: "/ˈɪn.dɪ.keɪt/",            meaning: "chỉ ra, cho thấy",                example: "The survey results indicate high satisfaction." },
+  { id: 52, word: "retain",          wordForm: "verb",          ipa: "/rɪˈteɪn/",                meaning: "giữ lại",                         example: "The company aims to retain skilled employees." },
+  { id: 53, word: "flavour",         wordForm: "noun",          ipa: "/ˈfleɪ.vər/",              meaning: "hương vị",                        example: "Customers can choose their preferred flavour." },
+  { id: 54, word: "sacrifice",       wordForm: "verb / noun",   ipa: "/ˈsæk.rɪ.faɪs/",          meaning: "hy sinh",                         example: "He sacrificed his time to finish the project." },
+  { id: 55, word: "obtain",          wordForm: "verb",          ipa: "/əbˈteɪn/",                meaning: "đạt được, thu được",              example: "You must obtain approval before ordering." },
+  { id: 56, word: "merger",          wordForm: "noun",          ipa: "/ˈmɜːr.dʒər/",             meaning: "sự sáp nhập",                     example: "The merger was announced last month." },
+  { id: 57, word: "nutritious",      wordForm: "adjective",     ipa: "/nuːˈtrɪʃ.əs/",            meaning: "giàu dinh dưỡng",                 example: "The cafeteria offers nutritious meals." },
+  { id: 58, word: "individual",      wordForm: "noun / adj",    ipa: "/ˌɪn.dɪˈvɪdʒ.u.əl/",     meaning: "cá nhân",                         example: "Each individual employee has a login ID." },
+  { id: 59, word: "opportunity",     wordForm: "noun",          ipa: "/ˌɑː.pəˈtuː.nə.ti/",      meaning: "cơ hội",                          example: "This training is a great opportunity for staff." },
+  { id: 60, word: "substitute",      wordForm: "verb / noun",   ipa: "/ˈsʌb.stɪ.tuːt/",         meaning: "thay thế",                        example: "A temporary worker was hired to substitute her." },
+  { id: 61, word: "critical",        wordForm: "adjective",     ipa: "/ˈkrɪt.ɪ.kəl/",           meaning: "mang tính phê bình; quan trọng",  example: "Time management is critical to success." },
+  { id: 62, word: "colleague",       wordForm: "noun",          ipa: "/ˈkɑː.liːɡ/",              meaning: "đồng nghiệp",                     example: "She discussed the issue with her colleagues." },
+  { id: 63, word: "courtesy",        wordForm: "noun",          ipa: "/ˈkɜː.tə.si/",             meaning: "lịch sự, nhã nhặn",               example: "Thank you for your courtesy and support." },
+  { id: 64, word: "get the word out",wordForm: "idiom",         ipa: "/ɡet ðə wɜːrd aʊt/",       meaning: "truyền tin, thông báo rộng rãi",  example: "We used social media to get the word out." },
+  { id: 65, word: "install",         wordForm: "verb",          ipa: "/ɪnˈstɔːl/",               meaning: "lắp đặt",                         example: "The software will be installed this afternoon." },
+  { id: 66, word: "significant",     wordForm: "adjective",     ipa: "/sɪɡˈnɪf.ɪ.kənt/",        meaning: "đáng kể, quan trọng",             example: "There has been a significant increase in sales." },
+  { id: 67, word: "estimate",        wordForm: "verb / noun",   ipa: "/ˈes.tɪ.meɪt/",            meaning: "ước tính",                        example: "The contractor provided a cost estimate." },
+  { id: 68, word: "liaison",         wordForm: "noun",          ipa: "/lɪˈeɪ.zɑːn/",             meaning: "người liên lạc",                  example: "She acts as a liaison between departments." },
+  { id: 69, word: "successive",      wordForm: "adjective",     ipa: "/səkˈses.ɪv/",             meaning: "liên tiếp",                       example: "He arrived late for two successive meetings." },
+  { id: 70, word: "expert",          wordForm: "noun / adj",    ipa: "/ˈek.spɜːt/",              meaning: "chuyên gia",                      example: "Please consult an expert for advice." },
+  { id: 71, word: "diagnose",        wordForm: "verb",          ipa: "/ˈdaɪ.əɡ.noʊz/",          meaning: "chẩn đoán",                       example: "The technician will diagnose the system issue." },
+  { id: 72, word: "replace",         wordForm: "verb",          ipa: "/rɪˈpleɪs/",               meaning: "thay thế",                        example: "The company decided to replace the printer." },
+  { id: 73, word: "resemble",        wordForm: "verb",          ipa: "/rɪˈzem.bəl/",             meaning: "giống",                           example: "The new logo resembles the old design." },
+  { id: 74, word: "approve",         wordForm: "verb",          ipa: "/əˈpruːv/",                meaning: "phê duyệt",                       example: "The budget was approved by management." },
+  { id: 75, word: "inspection",      wordForm: "noun",          ipa: "/ɪnˈspek.ʃən/",            meaning: "kiểm tra",                        example: "The building passed the safety inspection." },
+  { id: 76, word: "proactive",       wordForm: "adjective",     ipa: "/proʊˈæk.tɪv/",            meaning: "chủ động",                        example: "We encourage proactive communication." },
+  { id: 77, word: "procedure",       wordForm: "noun",          ipa: "/prəˈsiː.dʒər/",           meaning: "quy trình",                       example: "Please follow the standard procedure." },
+  { id: 78, word: "compete",         wordForm: "verb",          ipa: "/kəmˈpiːt/",               meaning: "cạnh tranh",                      example: "Small businesses must compete effectively." },
+  { id: 79, word: "instrumental",    wordForm: "adjective",     ipa: "/ˌɪn.strəˈmen.təl/",       meaning: "đóng vai trò quan trọng",         example: "Her support was instrumental in the project." },
+  { id: 80, word: "combine",         wordForm: "verb",          ipa: "/kəmˈbaɪn/",               meaning: "kết hợp",                         example: "We plan to combine the two departments." },
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let state = {
+  okSet: new Set(),
+  hardSet: new Set(),
+  seenSet: new Set(),
+  currentIdx: 0,
+  isHardMode: false,
+  deck: [],       // array of word ids in current session order
+  isFlipped: false,
+};
+
+let voicesList = [];
+
+// ── Persistence ──────────────────────────────────────────────────────────
+function saveState() {
+  const raw = {
+    okSet: [...state.okSet],
+    hardSet: [...state.hardSet],
+    seenSet: [...state.seenSet],
+    currentIdx: state.currentIdx,
+    isHardMode: state.isHardMode,
+    deck: state.deck,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
+}
+
+function loadState() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (!raw) return false;
+    state.okSet = new Set(raw.okSet || []);
+    state.hardSet = new Set(raw.hardSet || []);
+    state.seenSet = new Set(raw.seenSet || []);
+    state.currentIdx = raw.currentIdx || 0;
+    state.isHardMode = raw.isHardMode || false;
+    state.deck = raw.deck || [];
+    return true;
+  } catch { return false; }
+}
+
+// ── Speech ────────────────────────────────────────────────────────────────
+function loadVoices() {
+  voicesList = window.speechSynthesis.getVoices();
+}
+window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+loadVoices();
+
+function speak() {
+  const w = currentWord();
+  if (!w) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(w.word);
+  utt.rate = 0.85;
+  utt.lang = 'en-US';
+  const local = voicesList.find(v => v.localService && v.lang.startsWith('en'));
+  const any   = voicesList.find(v => v.lang.startsWith('en'));
+  utt.voice = local || any || null;
+  window.speechSynthesis.speak(utt);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function currentWord() {
+  const id = state.deck[state.currentIdx];
+  return words.find(w => w.id === id) || null;
+}
+
+function buildDeck(hardOnly = false) {
+  if (hardOnly) {
+    return [...state.hardSet];
+  }
+  return words.map(w => w.id);
+}
+
+function initDeck(hardOnly = false) {
+  state.isHardMode = hardOnly;
+  state.deck = buildDeck(hardOnly);
+  state.currentIdx = 0;
+  state.isFlipped = false;
+  if (!hardOnly) {
+    state.okSet.clear();
+    state.hardSet.clear();
+    state.seenSet.clear();
+  }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render() {
+  const w = currentWord();
+  const isDone = !w;
+
+  document.getElementById('study-area').style.display = isDone ? 'none' : 'flex';
+  const doneEl = document.getElementById('done-screen');
+  if (isDone) {
+    doneEl.classList.add('visible');
+    renderDone();
+    return;
+  }
+  doneEl.classList.remove('visible');
+
+  // card content
+  const total = state.deck.length;
+  const pos   = state.currentIdx + 1;
+  const label = `${pos} / ${total}`;
+  document.getElementById('card-counter').textContent = label;
+  document.getElementById('card-counter-back').textContent = label;
+  document.getElementById('card-word').textContent = w.word;
+  document.getElementById('card-word-back').textContent = w.word;
+  document.getElementById('card-ipa').textContent = w.ipa;
+  document.getElementById('card-form').textContent = w.wordForm;
+  document.getElementById('card-meaning').textContent = w.meaning;
+  document.getElementById('card-example').textContent = `"${w.example}"`;
+
+  // flip state
+  const inner = document.getElementById('card-inner');
+  if (state.isFlipped) inner.classList.add('flipped');
+  else inner.classList.remove('flipped');
+
+  // stats
+  document.getElementById('stat-total').textContent = state.deck.length;
+  document.getElementById('stat-seen').textContent  = state.seenSet.size;
+  document.getElementById('stat-ok').textContent    = state.okSet.size;
+  document.getElementById('stat-hard').textContent  = state.hardSet.size;
+
+  // progress
+  const pct = state.deck.length > 0
+    ? Math.round((state.seenSet.size / state.deck.length) * 100)
+    : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  // mode badge & button
+  const badge = document.getElementById('mode-badge');
+  const modeBtn = document.getElementById('btn-mode');
+  if (state.isHardMode) {
+    badge.textContent = 'Ôn từ khó';
+    badge.className = 'mode-badge hard';
+    modeBtn.textContent = 'Học tất cả';
+  } else {
+    badge.textContent = 'Tất cả';
+    badge.className = 'mode-badge';
+    modeBtn.textContent = 'Ôn từ khó';
+  }
+}
+
+function renderDone() {
+  const okCount = state.okSet.size;
+  const hardCount = state.hardSet.size;
+  document.getElementById('done-ok').textContent   = okCount;
+  document.getElementById('done-hard').textContent = hardCount;
+  document.getElementById('done-title').textContent =
+    state.isHardMode ? 'Xong phần ôn từ khó!' : 'Hoàn thành!';
+  document.getElementById('done-sub').textContent =
+    state.isHardMode
+      ? `Bạn đã xem qua ${state.deck.length} từ cần ôn.`
+      : `Bạn đã xem qua tất cả ${words.length} từ vựng.`;
+  const reviewBtn = document.getElementById('btn-review-hard');
+  reviewBtn.disabled = state.hardSet.size === 0;
+  reviewBtn.textContent = `Ôn lại từ khó (${state.hardSet.size})`;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────
+function flipCard() {
+  const w = currentWord();
+  if (!w) return;
+  state.isFlipped = !state.isFlipped;
+  if (state.isFlipped) state.seenSet.add(w.id);
+  render();
+  saveState();
+}
+
+function markCard(type) {
+  const w = currentWord();
+  if (!w) return;
+  state.seenSet.add(w.id);
+  if (type === 'ok') {
+    state.okSet.add(w.id);
+    state.hardSet.delete(w.id);
+  } else {
+    state.hardSet.add(w.id);
+    state.okSet.delete(w.id);
+  }
+  nextCard();
+}
+
+function nextCard() {
+  state.isFlipped = false;
+  if (state.currentIdx < state.deck.length - 1) {
+    state.currentIdx++;
+  } else {
+    state.currentIdx = state.deck.length; // signals done
+  }
+  render();
+  saveState();
+}
+
+function prevCard() {
+  if (state.currentIdx > 0) {
+    state.currentIdx--;
+    state.isFlipped = false;
+    render();
+    saveState();
+  }
+}
+
+function skipCard() {
+  const w = currentWord();
+  if (w) state.seenSet.add(w.id);
+  nextCard();
+}
+
+function toggleMode() {
+  if (state.isHardMode) {
+    restartAll();
+  } else {
+    if (state.hardSet.size === 0) {
+      alert('Chưa có từ nào được đánh dấu "Cần ôn".');
+      return;
+    }
+    startHardMode();
+  }
+}
+
+function restartAll() {
+  initDeck(false);
+  render();
+  saveState();
+}
+
+function startHardMode() {
+  if (state.hardSet.size === 0) return;
+  initDeck(true);
+  render();
+  saveState();
+}
+
+// ── Keyboard ──────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === ' ' || e.code === 'Space') {
+    e.preventDefault();
+    flipCard();
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    if (state.isFlipped) markCard('ok'); else skipCard();
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    if (state.isFlipped) markCard('hard'); else prevCard();
+  } else if (e.key === 'r' || e.key === 'R') {
+    speak();
+  }
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+(function boot() {
+  const restored = loadState();
+  if (!restored || state.deck.length === 0) {
+    initDeck(false);
+  }
+  render();
+})();
+</script>
+</body>
+</html>
