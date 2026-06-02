@@ -1,8 +1,12 @@
 # Dependencies
 node_modules/
-.pnp
-.pnp.js
+
+# Yarn Berry
+.pnp.cjs
+.pnp.loader.mjs
+.yarn/cache
 .yarn/install-state.gz
+.yarn/unplugged
 
 # Build outputs
 dist/
