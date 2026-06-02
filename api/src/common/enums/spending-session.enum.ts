@@ -1,0 +1,18 @@
+export const SPENDING_SESSION = {
+  MORNING: 'MORNING',
+  NOON: 'NOON',
+  AFTERNOON: 'AFTERNOON',
+  EVENING: 'EVENING',
+} as const;
+
+export type SpendingSessionName =
+  (typeof SPENDING_SESSION)[keyof typeof SPENDING_SESSION];
+
+export const SPENDING_SESSION_VALUES = Object.values(SPENDING_SESSION);
+
+export const SPENDING_SESSION_ORDER: SpendingSessionName[] = [
+  SPENDING_SESSION.MORNING,
+  SPENDING_SESSION.NOON,
+  SPENDING_SESSION.AFTERNOON,
+  SPENDING_SESSION.EVENING,
+];
