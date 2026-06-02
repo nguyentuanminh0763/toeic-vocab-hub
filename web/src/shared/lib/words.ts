@@ -1,4 +1,5 @@
-export type WordStatus = 'ok' | 'hard' | 'unseen';
+export type { WordStatus } from '@/shared/types/study';
+export type { StudyState } from '@/shared/types/study';
 
 export interface Word {
   id: number;
@@ -94,14 +95,7 @@ export const words: Word[] = [
 
 export const STORAGE_KEY = 'toeic_test1_progress_v2';
 
-export interface StudyState {
-  okSet: number[];
-  hardSet: number[];
-  seenSet: number[];
-  currentIdx: number;
-  isHardMode: boolean;
-  deck: number[];
-}
+import type { StudyState } from '@/shared/types/study';
 
 export function loadStudyState(): StudyState | null {
   if (typeof window === 'undefined') return null;
