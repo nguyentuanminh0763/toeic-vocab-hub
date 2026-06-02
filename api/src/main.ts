@@ -31,13 +31,13 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('TFS API')
-    .setDescription('API for TFS')
+    .setTitle('TOEIC Vocab API')
+    .setDescription('API for TOEIC Vocab Hub — ETS 2026')
     .setVersion('1.0')
-    .addTag('tasks')
-    .addTag('spending')
+    .addBearerAuth()
     .addTag('auth')
-    .addTag('users')
+    .addTag('words')
+    .addTag('progress')
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     extraModels: [...swaggerExtraModels],
