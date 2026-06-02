@@ -1,46 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { words } from '@/shared/lib/words';
+import { formColor, useWordList } from '../hooks/useWordList';
 
-const FORM_COLORS: Record<string, string> = {
-  noun:           'bg-blue-50 text-blue-700',
-  verb:           'bg-green-50 text-green-700',
-  adjective:      'bg-yellow-50 text-yellow-700',
-  'verb / noun':  'bg-purple-50 text-purple-700',
-  'noun / adj':   'bg-orange-50 text-orange-700',
-  'phrasal verb': 'bg-teal-50 text-teal-700',
-  idiom:          'bg-pink-50 text-pink-700',
-};
-
-function formColor(form: string) {
-  return FORM_COLORS[form.toLowerCase()] ?? 'bg-gray-100 text-gray-600';
-}
-
-export default function WordsPage() {
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
-
-  const forms = ['all', ...Array.from(new Set(words.map((w) => w.wordForm))).sort()];
-
-  const filtered = words.filter((w) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      !q ||
-      w.word.toLowerCase().includes(q) ||
-      w.meaning.toLowerCase().includes(q);
-    const matchFilter = filter === 'all' || w.wordForm === filter;
-    return matchSearch && matchFilter;
-  });
-
-  function speak(word: string) {
-    if (typeof window === 'undefined') return;
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(word);
-    utt.rate = 0.85;
-    utt.lang = 'en-US';
-    window.speechSynthesis.speak(utt);
-  }
+export default function WordList() {
+  const { search, setSearch, filter, setFilter, forms, filtered, speak } = useWordList();
 
   return (
     <div className="w-full max-w-lg flex flex-col gap-4">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { words } from '@/shared/lib/words';
-import { loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/words';
+import { loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/study-storage';
 import type { StudyState } from '@/shared/types/study';
 
 export function useFlashcard() {
@@ -12,6 +12,7 @@ export function useFlashcard() {
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const saved = loadStudyState();
     if (saved && saved.deck.length > 0) setState(saved);
@@ -107,8 +108,8 @@ export function useFlashcard() {
     const handler = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).tagName === 'INPUT') return;
       if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); flip(); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); isFlipped ? mark('ok')   : skip(); }
-      else if (e.key === 'ArrowLeft')  { e.preventDefault(); isFlipped ? mark('hard') : prev(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); if (isFlipped) mark('ok'); else skip(); }
+      else if (e.key === 'ArrowLeft')  { e.preventDefault(); if (isFlipped) mark('hard'); else prev(); }
       else if (e.key === 'r' || e.key === 'R') speak();
     };
     window.addEventListener('keydown', handler);

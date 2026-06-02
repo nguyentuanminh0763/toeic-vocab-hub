@@ -1,59 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { words, loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/words';
-import type { StudyState } from '@/shared/types/study';
 import Link from 'next/link';
+import { useProgress } from '../hooks/useProgress';
 
-export default function ProgressPage() {
-  const [state, setState] = useState<StudyState | null>(null);
+export default function ProgressView() {
+  const { stats, hardWords, resetProgress } = useProgress();
 
-  useEffect(() => {
-    const saved = loadStudyState();
-    setState(saved ?? defaultStudyState());
-  }, []);
-
-  if (!state) return null;
-
-  const total = words.length;
-  const seen  = state.seenSet.length;
-  const ok    = state.okSet.length;
-  const hard  = state.hardSet.length;
-  const unseen = total - seen;
-
-  const pctOk   = total > 0 ? Math.round((ok   / total) * 100) : 0;
-  const pctHard = total > 0 ? Math.round((hard / total) * 100) : 0;
-  const pctSeen = total > 0 ? Math.round((seen / total) * 100) : 0;
-
-  function resetProgress() {
-    const fresh = defaultStudyState();
-    saveStudyState(fresh);
-    setState(fresh);
-  }
-
-  const hardWords = words.filter((w) => state.hardSet.includes(w.id));
+  if (!stats) return null;
 
   return (
     <div className="w-full max-w-lg flex flex-col gap-5">
       <h1 className="text-lg font-extrabold text-gray-900">Tiến độ học</h1>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3">
-        <StatCard value={total}  label="Tổng số từ"    color="text-[#534AB7]" bg="bg-[#EAE8F9]" />
-        <StatCard value={seen}   label="Đã xem"        color="text-[#534AB7]" bg="bg-[#EAE8F9]" />
-        <StatCard value={ok}     label="Nhớ rồi"       color="text-[#085041]" bg="bg-[#E1F5EE]" />
-        <StatCard value={hard}   label="Cần ôn"        color="text-[#712B13]" bg="bg-[#FAECE7]" />
+        <StatCard value={stats.total} label="Tổng số từ" color="text-[#534AB7]" bg="bg-[#EAE8F9]" />
+        <StatCard value={stats.seen} label="Đã xem" color="text-[#534AB7]" bg="bg-[#EAE8F9]" />
+        <StatCard value={stats.ok} label="Nhớ rồi" color="text-[#085041]" bg="bg-[#E1F5EE]" />
+        <StatCard value={stats.hard} label="Cần ôn" color="text-[#712B13]" bg="bg-[#FAECE7]" />
       </div>
 
-      {/* Progress bars */}
       <div className="bg-white rounded-2xl p-5 shadow-sm flex flex-col gap-4">
-        <BarRow label="Đã xem"   pct={pctSeen} color="bg-[#534AB7]" />
-        <BarRow label="Nhớ rồi" pct={pctOk}   color="bg-[#9FE1CB]" />
-        <BarRow label="Cần ôn"  pct={pctHard}  color="bg-[#f4a896]" />
-        <BarRow label="Chưa xem" pct={total > 0 ? Math.round((unseen / total) * 100) : 0} color="bg-gray-200" />
+        <BarRow label="Đã xem" pct={stats.pctSeen} color="bg-[#534AB7]" />
+        <BarRow label="Nhớ rồi" pct={stats.pctOk} color="bg-[#9FE1CB]" />
+        <BarRow label="Cần ôn" pct={stats.pctHard} color="bg-[#f4a896]" />
+        <BarRow label="Chưa xem" pct={stats.pctUnseen} color="bg-gray-200" />
       </div>
 
-      {/* Actions */}
       <div className="flex gap-3">
         <Link href="/" className="flex-1 py-3 rounded-xl bg-[#534AB7] text-white font-bold text-sm text-center hover:bg-[#443fa0] transition-colors">
           Tiếp tục học
@@ -66,7 +38,6 @@ export default function ProgressPage() {
         </button>
       </div>
 
-      {/* Hard words list */}
       {hardWords.length > 0 && (
         <div className="flex flex-col gap-2">
           <h2 className="text-sm font-bold text-[#712B13]">Từ cần ôn ({hardWords.length})</h2>
