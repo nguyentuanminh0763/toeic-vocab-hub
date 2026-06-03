@@ -12,7 +12,7 @@ const SpeakIcon = () => (
 );
 
 export default function Flashcard({ set = DEFAULT_SET }: { set?: string }) {
-  const { state, isFlipped, mounted, currentWord, isDone, speak, flip, mark, skip, prev, restartAll, startHardMode, toggleMode } = useFlashcard(set);
+  const { state, isFlipped, mounted, currentWord, isDone, savedSession, speak, flip, mark, skip, prev, restartAll, startHardMode, toggleMode } = useFlashcard(set);
   const setLabel = WORD_SETS[set as keyof typeof WORD_SETS]?.label ?? set;
 
   if (!mounted) return null;
@@ -22,36 +22,57 @@ export default function Flashcard({ set = DEFAULT_SET }: { set?: string }) {
   const pct   = total > 0 ? Math.round((state.seenSet.length / total) * 100) : 0;
 
   if (isDone || !currentWord) {
+    const okCount   = savedSession?.ok   ?? state.okSet.length;
+    const hardCount = savedSession?.hard ?? state.hardSet.length;
+    const hardIds   = savedSession?.hardIds ?? state.hardSet;
+    const pctOk = total > 0 ? Math.round((okCount / total) * 100) : 0;
+
     return (
-      <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-10 text-center">
+      <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8 text-center">
         <div className="text-5xl mb-1">&#127881;</div>
-        <h2 className="text-2xl font-extrabold text-gray-900">
+        <h2 className="text-xl font-extrabold text-gray-900">
           {state.isHardMode ? 'Xong phần ôn từ khó!' : 'Hoàn thành!'}
         </h2>
-        <p className="text-sm text-gray-500">
-          {state.isHardMode
-            ? `Bạn đã xem qua ${total} từ cần ôn.`
-            : `Bạn đã xem qua tất cả ${getWordsBySet(DEFAULT_SET).length} từ vựng.`}
+        <p className="text-xs text-gray-400">
+          {savedSession && !state.isHardMode ? `Kết quả đã được lưu lại` : `${total} từ đã xem`}
         </p>
-        <div className="flex gap-4 w-full my-2">
+
+        {/* Score ring */}
+        <div className="flex gap-3 w-full">
           <div className="flex-1 bg-[#E1F5EE] text-[#085041] rounded-xl p-4 font-bold">
-            <div className="text-3xl">{state.okSet.length}</div>
+            <div className="text-3xl">{okCount}</div>
             <div className="text-xs mt-1 opacity-80">Nhớ rồi</div>
+            <div className="text-xs opacity-60 mt-0.5">{pctOk}%</div>
           </div>
           <div className="flex-1 bg-[#FAECE7] text-[#712B13] rounded-xl p-4 font-bold">
-            <div className="text-3xl">{state.hardSet.length}</div>
+            <div className="text-3xl">{hardCount}</div>
             <div className="text-xs mt-1 opacity-80">Cần ôn</div>
+            <div className="text-xs opacity-60 mt-0.5">{total > 0 ? Math.round((hardCount / total) * 100) : 0}%</div>
+          </div>
+          <div className="flex-1 bg-gray-50 text-gray-500 rounded-xl p-4 font-bold">
+            <div className="text-3xl">{total - okCount - hardCount}</div>
+            <div className="text-xs mt-1 opacity-80">Bỏ qua</div>
           </div>
         </div>
-        <button onClick={restartAll} className="w-full py-3.5 rounded-xl bg-[#534AB7] text-white font-bold text-base hover:bg-[#443fa0] transition-colors">
+
+        {/* Actions */}
+        {hardIds.length > 0 && (
+          <button
+            onClick={() => startHardMode(hardIds)}
+            className="w-full py-3 rounded-xl bg-[#712B13] text-white font-bold text-sm hover:opacity-90 transition-opacity"
+          >
+            Ôn từ khó lần này ({hardIds.length} từ)
+          </button>
+        )}
+        <button onClick={restartAll} className="w-full py-3 rounded-xl bg-[#534AB7] text-white font-bold text-sm hover:bg-[#443fa0] transition-colors">
           Học lại từ đầu
         </button>
         <button
-          onClick={startHardMode}
+          onClick={() => startHardMode()}
           disabled={state.hardSet.length === 0}
-          className="w-full py-3.5 rounded-xl border-2 border-[#712B13] bg-[#FAECE7] text-[#712B13] font-bold text-base disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-80 transition-opacity"
+          className="w-full py-3 rounded-xl border border-gray-200 bg-white text-gray-500 font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#534AB7] hover:text-[#534AB7] transition-colors"
         >
-          Ôn lại từ khó ({state.hardSet.length})
+          Ôn tất cả từ khó đã tích luỹ ({state.hardSet.length})
         </button>
       </div>
     );

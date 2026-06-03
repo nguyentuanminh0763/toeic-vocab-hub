@@ -1,12 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProgress } from '../hooks/useProgress';
+import { loadSessions } from '@/shared/lib/session-storage';
+import { DEFAULT_SET } from '@/shared/lib/words';
+import type { StudySession } from '@/shared/types/session';
 
 export default function ProgressView({ set }: { set?: string }) {
-  const { stats, hardWords, resetProgress } = useProgress(set);
+  const activeSet = set ?? DEFAULT_SET;
+  const { stats, hardWords, resetProgress } = useProgress(activeSet);
   const [confirming, setConfirming] = useState(false);
+  const [sessions, setSessions] = useState<StudySession[]>([]);
+
+  useEffect(() => {
+    setSessions(loadSessions(activeSet));
+  }, [activeSet]);
 
   if (!stats) return null;
 
@@ -39,6 +48,48 @@ export default function ProgressView({ set }: { set?: string }) {
           Reset tiến độ
         </button>
       </div>
+
+      {/* Session history */}
+      {sessions.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <h2 className="text-sm font-bold text-gray-700">Lịch sử ôn luyện ({sessions.length} lần)</h2>
+          <div className="flex flex-col gap-2">
+            {sessions.map((s, i) => {
+              const pct = s.total > 0 ? Math.round((s.ok / s.total) * 100) : 0;
+              const d   = new Date(s.date);
+              const label = s.isHardMode ? 'Ôn từ khó' : 'Học toàn bộ';
+              return (
+                <div key={s.id} className="bg-white rounded-xl px-4 py-3 shadow-sm flex items-center gap-4">
+                  <div className="text-xs text-gray-300 font-mono w-5 text-right shrink-0">#{sessions.length - i}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-gray-500">{label}</span>
+                      <span className="text-[10px] text-gray-300">{d.toLocaleDateString('vi-VN')} {d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#9FE1CB] rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 shrink-0 text-center">
+                    <div>
+                      <div className="text-sm font-bold text-[#085041]">{s.ok}</div>
+                      <div className="text-[10px] text-gray-400">Nhớ</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-[#712B13]">{s.hard}</div>
+                      <div className="text-[10px] text-gray-400">Khó</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-400">{s.total}</div>
+                      <div className="text-[10px] text-gray-400">Tổng</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {hardWords.length > 0 && (
         <div className="flex flex-col gap-2">

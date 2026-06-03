@@ -3,13 +3,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
 import { loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/study-storage';
+import { saveSession } from '@/shared/lib/session-storage';
 import type { StudyState } from '@/shared/types/study';
+import type { StudySession } from '@/shared/types/session';
 
 export function useFlashcard(set: string = DEFAULT_SET) {
   const deckWords = getWordsBySet(set);
   const [state, setState] = useState<StudyState>(() => defaultStudyState(set));
   const [isFlipped, setIsFlipped] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [savedSession, setSavedSession] = useState<StudySession | null>(null);
+  const sessionSavedRef = useRef(false);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
@@ -26,6 +30,25 @@ export function useFlashcard(set: string = DEFAULT_SET) {
 
   const currentWord = deckWords.find((w) => w.id === state.deck[state.currentIdx]);
   const isDone = !currentWord;
+
+  // Auto-save session khi xong deck lần đầu
+  useEffect(() => {
+    if (!isDone || !mounted || sessionSavedRef.current) return;
+    sessionSavedRef.current = true;
+    const session: StudySession = {
+      id: `${set}_${Date.now()}`,
+      setName: set,
+      date: new Date().toISOString(),
+      total: state.deck.length,
+      ok: state.okSet.length,
+      hard: state.hardSet.length,
+      okIds: [...state.okSet],
+      hardIds: [...state.hardSet],
+      isHardMode: state.isHardMode,
+    };
+    saveSession(set, session);
+    setSavedSession(session);
+  }, [isDone, mounted, set, state]);
 
   const save = useCallback((s: StudyState) => {
     setState(s);
@@ -86,6 +109,7 @@ export function useFlashcard(set: string = DEFAULT_SET) {
   }, [state, save]);
 
   const restartAll = useCallback(() => {
+    sessionSavedRef.current = false;
     setIsFlipped(false);
     // Giữ lại okSet và hardSet — chỉ reset vị trí và seenSet
     save({
@@ -97,10 +121,12 @@ export function useFlashcard(set: string = DEFAULT_SET) {
     });
   }, [state, save, set, deckWords]);
 
-  const startHardMode = useCallback(() => {
-    if (state.hardSet.length === 0) return;
+  const startHardMode = useCallback((hardIds?: number[]) => {
+    const ids = hardIds ?? state.hardSet;
+    if (ids.length === 0) return;
+    sessionSavedRef.current = false;
     setIsFlipped(false);
-    save({ ...state, isHardMode: true, deck: [...state.hardSet], currentIdx: 0 });
+    save({ ...state, isHardMode: true, deck: [...ids], currentIdx: 0 });
   }, [state, save]);
 
   const toggleMode = useCallback(() => {
@@ -130,6 +156,7 @@ export function useFlashcard(set: string = DEFAULT_SET) {
     mounted,
     currentWord,
     isDone,
+    savedSession,
     speak,
     flip,
     mark,
