@@ -32,7 +32,7 @@ export default function QuestionScreen({ question, index, total, correctCount, w
   }, [pick, question.options]);
 
   return (
-    <div className="w-full max-w-md flex flex-col gap-4">
+    <div className="w-full max-w-md md:max-w-xl flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div className="h-full bg-[#534AB7] rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />

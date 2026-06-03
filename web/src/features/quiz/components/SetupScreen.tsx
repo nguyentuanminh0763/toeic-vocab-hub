@@ -25,7 +25,7 @@ export default function SetupScreen({ onStart }: Props) {
   }, []);
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8 flex flex-col gap-6">
+    <div className="w-full max-w-md md:max-w-xl bg-white rounded-2xl shadow-md p-8 md:p-10 flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-extrabold text-gray-900">Quiz Mode</h1>
         <p className="text-sm text-gray-400 mt-1">Trắc nghiệm 4 đáp án — kiểm tra recall thực sự</p>

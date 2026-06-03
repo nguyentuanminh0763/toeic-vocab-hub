@@ -9,10 +9,10 @@ export default function ProgressView() {
   if (!stats) return null;
 
   return (
-    <div className="w-full max-w-lg flex flex-col gap-5">
+    <div className="w-full max-w-6xl flex flex-col gap-5">
       <h1 className="text-lg font-extrabold text-gray-900">Tiến độ học</h1>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard value={stats.total} label="Tổng số từ" color="text-[#534AB7]" bg="bg-[#EAE8F9]" />
         <StatCard value={stats.seen} label="Đã xem" color="text-[#534AB7]" bg="bg-[#EAE8F9]" />
         <StatCard value={stats.ok} label="Nhớ rồi" color="text-[#085041]" bg="bg-[#E1F5EE]" />
@@ -41,6 +41,7 @@ export default function ProgressView() {
       {hardWords.length > 0 && (
         <div className="flex flex-col gap-2">
           <h2 className="text-sm font-bold text-[#712B13]">Từ cần ôn ({hardWords.length})</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {hardWords.map((w) => (
             <div key={w.id} className="bg-[#FAECE7] rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
@@ -50,6 +51,7 @@ export default function ProgressView() {
               <span className="text-xs text-gray-400 font-mono">{w.ipa}</span>
             </div>
           ))}
+          </div>
         </div>
       )}
     </div>

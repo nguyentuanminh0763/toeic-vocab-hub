@@ -14,7 +14,7 @@ export default function NavBar() {
   const pathname = usePathname();
   return (
     <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-50">
-      <nav className="max-w-lg mx-auto flex items-center justify-between px-4 h-12">
+      <nav className="max-w-6xl mx-auto flex items-center justify-between px-4 md:px-8 h-12">
         <span className="text-sm font-extrabold text-[#534AB7] tracking-tight">TOEIC Vocab</span>
         <div className="flex gap-1">
           {links.map(({ href, label }) => (

@@ -7,7 +7,7 @@ export default function WordList() {
   const { search, setSearch, filter, setFilter, forms, filtered, speak } = useWordList();
 
   return (
-    <div className="w-full max-w-lg flex flex-col gap-4">
+    <div className="w-full max-w-6xl flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <h1 className="text-lg font-extrabold text-gray-900">
           Danh sách từ vựng
@@ -39,7 +39,7 @@ export default function WordList() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {filtered.map((w) => (
           <div key={w.id} className="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3">
             <span className="text-xs text-gray-300 font-mono mt-1 w-6 shrink-0 text-right">{w.id}</span>

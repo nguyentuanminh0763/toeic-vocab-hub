@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="vi">
       <body className={`${geist.className} bg-[#F5F4FC] min-h-screen`}>
         <NavBar />
-        <main className="flex flex-col items-center px-4 pt-6 pb-16">
+        <main className="flex flex-col items-center px-4 md:px-8 pt-6 pb-16 w-full">
           {children}
         </main>
       </body>

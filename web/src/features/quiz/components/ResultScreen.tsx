@@ -18,7 +18,7 @@ export default function ResultScreen({ result, onRetry, onRetryWrong }: Props) {
                 { label: 'Ôn thêm nhé', color: 'text-[#712B13]' };
 
   return (
-    <div className="w-full max-w-md flex flex-col gap-5">
+    <div className="w-full max-w-md md:max-w-xl flex flex-col gap-5">
       <div className="bg-white rounded-2xl shadow-md p-8 text-center flex flex-col gap-3">
         <div className={`text-4xl font-extrabold ${grade.color}`}>{pct}%</div>
         <div className="text-lg font-bold text-gray-900">{grade.label}</div>
