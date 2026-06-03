@@ -1,25 +1,35 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+import { getToken } from '@/shared/lib/auth-storage';
+
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 export type WordStatus = 'ok' | 'hard' | 'unseen';
 
-export async function updateProgress(userId: string, wordId: string, status: WordStatus) {
-  const res = await fetch(`${API_BASE}/progress/${wordId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user_id: userId, status }),
-  });
-  if (!res.ok) throw new Error('Failed to update progress');
-  return res.json();
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${getToken()}`,
+  };
 }
 
-export async function fetchProgress(userId: string) {
-  const res = await fetch(`${API_BASE}/progress?user_id=${userId}`);
-  if (!res.ok) throw new Error('Failed to fetch progress');
-  return res.json();
+export async function syncWordProgress(wordUUID: string, status: WordStatus): Promise<void> {
+  const token = getToken();
+  if (!token) return;
+  try {
+    await fetch(`${BASE}/progress/${wordUUID}`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify({ status }),
+    });
+  } catch { /* fire-and-forget, không block UI */ }
 }
 
-export async function fetchStats(userId: string) {
-  const res = await fetch(`${API_BASE}/progress/stats?user_id=${userId}`);
-  if (!res.ok) throw new Error('Failed to fetch stats');
-  return res.json();
+export async function fetchAllProgress(): Promise<{ word_id: string; status: WordStatus }[]> {
+  const token = getToken();
+  if (!token) return [];
+  try {
+    const res = await fetch(`${BASE}/progress`, { headers: authHeaders() });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch { return []; }
 }

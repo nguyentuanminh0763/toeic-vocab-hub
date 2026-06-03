@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getActiveSet } from '@/shared/lib/active-set';
 import { WORD_SETS } from '@/shared/lib/words';
+import { getUser, clearAuth } from '@/shared/lib/auth-storage';
+import type { AuthUser } from '@/shared/lib/auth-storage';
 
 const links = [
   { href: '/study',    label: 'Flashcard' },
@@ -16,10 +18,12 @@ const links = [
 export default function NavBar() {
   const pathname = usePathname();
   const [setLabel, setSetLabel] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     const key = getActiveSet();
     setSetLabel(WORD_SETS[key]?.label ?? key);
+    setUser(getUser());
   }, [pathname]);
 
   const isStudyPage = pathname !== '/';
@@ -46,7 +50,7 @@ export default function NavBar() {
           )}
         </div>
 
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           {links.map(({ href, label }) => (
             <Link
               key={href}
@@ -60,6 +64,34 @@ export default function NavBar() {
               {label}
             </Link>
           ))}
+
+          <div className="ml-2 pl-2 border-l border-gray-200">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:block text-xs font-semibold text-gray-600 max-w-[100px] truncate">
+                  {user.full_name ?? user.email.split('@')[0]}
+                </span>
+                <button
+                  onClick={() => { clearAuth(); setUser(null); }}
+                  className="text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1"
+                  title="Đăng xuất"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  pathname === '/login'
+                    ? 'bg-[#534AB7] text-white'
+                    : 'text-[#534AB7] border border-[#534AB7] hover:bg-[#EAE8F9]'
+                }`}
+              >
+                Đăng nhập
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
     </header>

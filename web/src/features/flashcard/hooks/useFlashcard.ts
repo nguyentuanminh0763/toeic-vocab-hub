@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
 import { loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/study-storage';
 import { saveSession } from '@/shared/lib/session-storage';
+import { isLoggedIn } from '@/shared/lib/auth-storage';
+import { syncWordProgress } from '@/services/progress.api';
+import { fetchWordUUIDs } from '@/services/words.api';
 import type { StudyState } from '@/shared/types/study';
 import type { StudySession } from '@/shared/types/session';
 
@@ -14,6 +17,7 @@ export function useFlashcard(set: string = DEFAULT_SET) {
   const [mounted, setMounted] = useState(false);
   const [savedSession, setSavedSession] = useState<StudySession | null>(null);
   const sessionSavedRef = useRef(false);
+  const uuidMapRef = useRef<Map<number, string>>(new Map());
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
@@ -21,6 +25,11 @@ export function useFlashcard(set: string = DEFAULT_SET) {
     setMounted(true);
     const saved = loadStudyState(set);
     if (saved && saved.deck.length > 0) setState(saved);
+
+    // Load word UUID map nếu đã login (để sync BE)
+    if (isLoggedIn()) {
+      fetchWordUUIDs(set).then((map) => { uuidMapRef.current = map; });
+    }
 
     const loadVoices = () => { voicesRef.current = window.speechSynthesis.getVoices(); };
     loadVoices();
@@ -92,6 +101,9 @@ export function useFlashcard(set: string = DEFAULT_SET) {
       hardSet: type === 'hard' ? [...state.hardSet.filter((x) => x !== id), id] : state.hardSet.filter((x) => x !== id),
     };
     advance(ns);
+    // Sync to BE fire-and-forget
+    const uuid = uuidMapRef.current.get(id);
+    if (uuid) syncWordProgress(uuid, type);
   }, [currentWord, state, advance]);
 
   const skip = useCallback(() => {
