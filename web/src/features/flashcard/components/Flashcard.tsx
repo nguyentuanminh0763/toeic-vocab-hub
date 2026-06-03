@@ -1,6 +1,6 @@
 'use client';
 
-import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
+import { getWordsBySet, DEFAULT_SET, WORD_SETS } from '@/shared/lib/words';
 import { useFlashcard } from '../hooks/useFlashcard';
 
 const SpeakIcon = () => (
@@ -11,8 +11,9 @@ const SpeakIcon = () => (
   </svg>
 );
 
-export default function Flashcard() {
-  const { state, isFlipped, mounted, currentWord, isDone, speak, flip, mark, skip, prev, restartAll, startHardMode, toggleMode } = useFlashcard();
+export default function Flashcard({ set = DEFAULT_SET }: { set?: string }) {
+  const { state, isFlipped, mounted, currentWord, isDone, speak, flip, mark, skip, prev, restartAll, startHardMode, toggleMode } = useFlashcard(set);
+  const setLabel = WORD_SETS[set as keyof typeof WORD_SETS]?.label ?? set;
 
   if (!mounted) return null;
 
@@ -63,7 +64,7 @@ export default function Flashcard() {
       <div className="flex flex-col gap-3 flex-1 min-w-0">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-sm font-bold text-[#534AB7] tracking-tight">TOEIC ETS 2026 — Test 1</h1>
+          <h1 className="text-sm font-bold text-[#534AB7] tracking-tight">{setLabel}</h1>
           <span className={`text-xs font-semibold px-3 py-1 rounded-full md:hidden ${state.isHardMode ? 'bg-[#FAECE7] text-[#712B13]' : 'bg-[#EAE8F9] text-[#534AB7]'}`}>
             {state.isHardMode ? 'Ôn từ khó' : 'Tất cả'}
           </span>

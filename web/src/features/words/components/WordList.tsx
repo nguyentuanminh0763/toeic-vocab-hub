@@ -1,17 +1,16 @@
 'use client';
 
-import { words } from '@/shared/lib/words';
 import { formColor, useWordList } from '../hooks/useWordList';
 
-export default function WordList() {
-  const { search, setSearch, filter, setFilter, forms, filtered, speak } = useWordList();
+export default function WordList({ set }: { set?: string }) {
+  const { search, setSearch, filter, setFilter, forms, filtered, speak, total } = useWordList(set);
 
   return (
     <div className="w-full max-w-6xl flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <h1 className="text-lg font-extrabold text-gray-900">
           Danh sách từ vựng
-          <span className="ml-2 text-sm font-normal text-gray-400">{filtered.length} / {words.length}</span>
+          <span className="ml-2 text-sm font-normal text-gray-400">{filtered.length} / {total}</span>
         </h1>
 
         <input

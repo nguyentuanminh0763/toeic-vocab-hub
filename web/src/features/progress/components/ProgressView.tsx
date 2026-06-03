@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useProgress } from '../hooks/useProgress';
 
-export default function ProgressView() {
-  const { stats, hardWords, resetProgress } = useProgress();
+export default function ProgressView({ set }: { set?: string }) {
+  const { stats, hardWords, resetProgress } = useProgress(set);
 
   if (!stats) return null;
 

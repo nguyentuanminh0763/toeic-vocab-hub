@@ -1,5 +1,5 @@
-import WordList from '@/features/words/components/WordList';
+import WordListWithSet from '@/features/words/components/WordListWithSet';
 
 export default function WordsPage() {
-  return <WordList />;
+  return <WordListWithSet />;
 }

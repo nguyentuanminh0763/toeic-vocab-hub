@@ -40,5 +40,5 @@ export function useWordList(set: string = DEFAULT_SET) {
     window.speechSynthesis.speak(utt);
   }, []);
 
-  return { search, setSearch, filter, setFilter, forms, filtered, speak };
+  return { search, setSearch, filter, setFilter, forms, filtered, speak, total: deckWords.length };
 }

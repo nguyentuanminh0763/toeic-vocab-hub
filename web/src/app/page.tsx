@@ -1,5 +1,5 @@
-import Flashcard from '@/features/flashcard/components/Flashcard';
+import SetSelector from '@/features/set-selector/components/SetSelector';
 
 export default function HomePage() {
-  return <Flashcard />;
+  return <SetSelector />;
 }

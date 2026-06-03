@@ -5,8 +5,8 @@ import SetupScreen from './SetupScreen';
 import QuestionScreen from './QuestionScreen';
 import ResultScreen from './ResultScreen';
 
-export default function Quiz() {
-  const { screen, questions, qIndex, result, startQuiz, handleAnswer, retryWrong, goSetup } = useQuiz();
+export default function Quiz({ set }: { set?: string }) {
+  const { screen, questions, qIndex, result, startQuiz, handleAnswer, retryWrong, goSetup } = useQuiz(set);
 
   return (
     <div className="flex flex-col items-center w-full">

@@ -1,5 +1,5 @@
-import ProgressView from '@/features/progress/components/ProgressView';
+import ProgressViewWithSet from '@/features/progress/components/ProgressViewWithSet';
 
 export default function ProgressPage() {
-  return <ProgressView />;
+  return <ProgressViewWithSet />;
 }

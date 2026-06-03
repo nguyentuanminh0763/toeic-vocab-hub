@@ -1,5 +1,5 @@
-import Quiz from '@/features/quiz/components/Quiz';
+import QuizWithSet from '@/features/quiz/components/QuizWithSet';
 
 export default function QuizPage() {
-  return <Quiz />;
+  return <QuizWithSet />;
 }
