@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useProgress } from '../hooks/useProgress';
 
 export default function ProgressView({ set }: { set?: string }) {
   const { stats, hardWords, resetProgress } = useProgress(set);
+  const [confirming, setConfirming] = useState(false);
 
   if (!stats) return null;
 
@@ -31,11 +33,7 @@ export default function ProgressView({ set }: { set?: string }) {
           Tiếp tục học
         </Link>
         <button
-          onClick={() => {
-            if (confirm('Reset toàn bộ tiến độ của bộ này?\nHành động không thể hoàn tác.')) {
-              resetProgress();
-            }
-          }}
+          onClick={() => setConfirming(true)}
           className="flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 font-bold text-sm hover:border-red-300 hover:text-red-500 transition-colors"
         >
           Reset tiến độ
@@ -55,6 +53,30 @@ export default function ProgressView({ set }: { set?: string }) {
               <span className="text-xs text-gray-400 font-mono">{w.ipa}</span>
             </div>
           ))}
+          </div>
+        </div>
+      )}
+
+      {/* Toast confirm */}
+      {confirming && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm">
+          <div className="bg-gray-900 text-white rounded-2xl px-5 py-4 shadow-2xl flex flex-col gap-3">
+            <p className="text-sm font-semibold">Reset toàn bộ tiến độ bộ này?</p>
+            <p className="text-xs text-gray-400">Hành động không thể hoàn tác.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirming(false)}
+                className="flex-1 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-colors"
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={() => { resetProgress(); setConfirming(false); }}
+                className="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
       )}
