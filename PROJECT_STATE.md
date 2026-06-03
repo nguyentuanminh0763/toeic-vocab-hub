@@ -4,36 +4,39 @@ _Last updated: 2026-06-02_
 
 ## Current Phase
 
-Phase 1 — Core scaffolding complete. Backend modules added. Next.js web initialized.
+Phase 2 — Feature architecture complete. API JWT auth wired. Ready for auth integration in web.
 
 ## Completed
 
-- [x] Standalone HTML flashcard app (`index.html`) — 80 từ ETS 2026 Test 1, phát âm, localStorage
-- [x] NestJS api base (auth, users, tasks, spending inherited from DayPilot)
-- [x] `words` module — entity + seeder + GET endpoints
-- [x] `progress` module — entity + PATCH/GET endpoints per user
-- [x] Next.js `web/` initialized (App Router, TypeScript, Tailwind)
-- [x] Flashcard page (`/`) — full flashcard UI ported to React
-- [x] Word list page (`/words`) — searchable, filterable
-- [x] Progress page (`/progress`) — stats per user
-- [x] Workflow docs created (TOEIC_AI_WORKFLOW_GUIDE.md, CLAUDE_RULES.md per folder)
+### Web (Next.js)
+- [x] Standalone HTML flashcard app (`index.html`) — fallback, no server needed
+- [x] Next.js bootstrapped — App Router, TypeScript, Tailwind, Yarn 4
+- [x] Feature-based architecture — `features/`, `shared/`, `services/`, `app/` thin wrappers
+- [x] Flashcard (`/`) — flip 3D, Web Speech API, ok/hard, keyboard shortcuts, localStorage
+- [x] Quiz (`/quiz`) — 4-option MCQ, setup screen, live score, result + retry wrong
+- [x] Word list (`/words`) — search, filter by word form, pronunciation
+- [x] Progress (`/progress`) — stats cards, progress bars, hard words list, reset
+- [x] Each feature has component (UI) + hook (logic) properly separated
+
+### API (NestJS)
+- [x] `auth` module — signup + login → `{ access_token, user }` (JWT 7d)
+- [x] `words` module — seeder 80 ETS 2026 Test 1, GET /words
+- [x] `progress` module — protected by JwtAuthGuard, user_id from JWT
+- [x] `JwtStrategy` + `JwtAuthGuard` + `@CurrentUser()` decorator
+- [x] Swagger at `/api` with BearerAuth support
 
 ## Pending
 
-- [ ] Auth integration in web (login → get JWT → sync progress to api)
-- [ ] Quiz mode (4-option multiple choice)
+- [ ] Auth login page in web (`/login`) — form → POST /auth/login → lưu token
+- [ ] Progress sync web → api (sau khi login)
+- [ ] Refresh token (httpOnly cookie, 30 ngày)
 - [ ] Dark mode
-- [ ] Add more word sets (ETS 2026 Test 2, 3...)
-- [ ] Remove DayPilot-inherited modules (tasks, spending) when confirmed unused
+- [ ] Thêm bộ từ (ETS 2026 Test 2, 3...)
+- [ ] Xóa DayPilot legacy modules (tasks, spending) khỏi api
 
 ## Known Issues
 
-- `index.html` still exists at root — legacy standalone version, keep for now
-- Backend CORS currently allows localhost:5173; update to localhost:3001 for Next.js dev
-- DayPilot tasks/spending modules still in api — not harmful, just unused
-
-## Architecture Decisions
-
-- Keep api modules `tasks` and `spending` (don't delete yet — may pivot)
-- `words` are seeded on startup (not managed via admin UI for now)
-- Progress is tied to `user_id`; unauthenticated users fall back to localStorage in web
+- `index.html` gốc vẫn còn ở root — giữ làm fallback
+- `words` data bị duplicate giữa `web/shared/lib/words.ts` và `api/words.service.ts`
+  → sẽ hợp nhất khi auth + sync được wired
+- Legacy `tasks`/`spending` modules vẫn còn trong api — unused, không harmful
