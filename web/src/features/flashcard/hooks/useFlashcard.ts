@@ -87,8 +87,15 @@ export function useFlashcard(set: string = DEFAULT_SET) {
 
   const restartAll = useCallback(() => {
     setIsFlipped(false);
-    save(defaultStudyState(set));
-  }, [save, set]);
+    // Giữ lại okSet và hardSet — chỉ reset vị trí và seenSet
+    save({
+      ...state,
+      seenSet: [],
+      currentIdx: 0,
+      isHardMode: false,
+      deck: deckWords.map((w) => w.id),
+    });
+  }, [state, save, set, deckWords]);
 
   const startHardMode = useCallback(() => {
     if (state.hardSet.length === 0) return;
