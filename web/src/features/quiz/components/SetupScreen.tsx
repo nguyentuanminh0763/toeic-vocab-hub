@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { words } from '@/shared/lib/words';
+import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
 import { loadStudyState } from '@/shared/lib/study-storage';
 import type { QuizMode } from '../hooks/useQuiz';
 
@@ -10,14 +10,14 @@ interface Props {
 }
 
 function getHardCount(): number {
-  return loadStudyState()?.hardSet.length ?? 0;
+  return loadStudyState(DEFAULT_SET)?.hardSet.length ?? 0;
 }
 
 export default function SetupScreen({ onStart }: Props) {
   const [mode, setMode]   = useState<QuizMode>('all');
   const [count, setCount] = useState(20);
   const [hardCount, setHardCount] = useState(0);
-  const maxCount  = mode === 'hard' ? hardCount : words.length;
+  const maxCount  = mode === 'hard' ? hardCount : getWordsBySet(DEFAULT_SET).length;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -37,7 +37,7 @@ export default function SetupScreen({ onStart }: Props) {
           {([['all', 'Tất cả 80 từ'], ['hard', `Từ khó (${hardCount})`]] as const).map(([m, label]) => (
             <button
               key={m}
-              onClick={() => { setMode(m); setCount(Math.min(count, m === 'hard' ? hardCount : words.length)); }}
+              onClick={() => { setMode(m); setCount(Math.min(count, m === 'hard' ? hardCount : getWordsBySet(DEFAULT_SET).length)); }}
               disabled={m === 'hard' && hardCount === 0}
               className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                 mode === m ? 'border-[#534AB7] bg-[#EAE8F9] text-[#534AB7]' : 'border-gray-200 text-gray-500 hover:border-[#534AB7] hover:text-[#534AB7]'

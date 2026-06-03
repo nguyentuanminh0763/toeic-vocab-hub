@@ -1,6 +1,6 @@
 'use client';
 
-import { words } from '@/shared/lib/words';
+import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
 import { useFlashcard } from '../hooks/useFlashcard';
 
 const SpeakIcon = () => (
@@ -30,7 +30,7 @@ export default function Flashcard() {
         <p className="text-sm text-gray-500">
           {state.isHardMode
             ? `Bạn đã xem qua ${total} từ cần ôn.`
-            : `Bạn đã xem qua tất cả ${words.length} từ vựng.`}
+            : `Bạn đã xem qua tất cả ${getWordsBySet(DEFAULT_SET).length} từ vựng.`}
         </p>
         <div className="flex gap-4 w-full my-2">
           <div className="flex-1 bg-[#E1F5EE] text-[#085041] rounded-xl p-4 font-bold">

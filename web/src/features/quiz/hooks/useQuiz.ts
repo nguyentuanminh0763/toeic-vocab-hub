@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { words } from '@/shared/lib/words';
+import { words, getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
 import type { Word } from '@/shared/lib/words';
 import { loadStudyState } from '@/shared/lib/study-storage';
 
@@ -37,19 +37,19 @@ function buildQuestions(deck: Word[]): QuizQuestion[] {
   });
 }
 
-function getHardDeck(): Word[] {
-  const hardIds = loadStudyState()?.hardSet ?? [];
-  return words.filter((w) => hardIds.includes(w.id));
+function getHardDeck(set: string): Word[] {
+  const hardIds = loadStudyState(set)?.hardSet ?? [];
+  return getWordsBySet(set).filter((w) => hardIds.includes(w.id));
 }
 
-export function useQuiz() {
+export function useQuiz(set: string = DEFAULT_SET) {
   const [screen, setScreen]       = useState<QuizScreen>('setup');
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [qIndex, setQIndex]       = useState(0);
   const [result, setResult]       = useState<QuizResult>({ total: 0, correct: 0, wrong: [] });
 
   function startQuiz(mode: QuizMode, count: number) {
-    const deck = mode === 'hard' ? getHardDeck() : words;
+    const deck = mode === 'hard' ? getHardDeck(set) : getWordsBySet(set);
     const qs = buildQuestions(deck).slice(0, count);
     setQuestions(qs);
     setQIndex(0);

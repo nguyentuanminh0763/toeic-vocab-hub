@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { words } from '@/shared/lib/words';
+import { words, getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
 
 export const FORM_COLORS: Record<string, string> = {
   noun:           'bg-blue-50 text-blue-700',
@@ -17,13 +17,14 @@ export function formColor(form: string) {
   return FORM_COLORS[form.toLowerCase()] ?? 'bg-gray-100 text-gray-600';
 }
 
-export function useWordList() {
+export function useWordList(set: string = DEFAULT_SET) {
+  const deckWords = getWordsBySet(set);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
-  const forms = ['all', ...Array.from(new Set(words.map((w) => w.wordForm))).sort()];
+  const forms = ['all', ...Array.from(new Set(deckWords.map((w) => w.wordForm))).sort()];
 
-  const filtered = words.filter((w) => {
+  const filtered = deckWords.filter((w) => {
     const q = search.toLowerCase();
     const matchSearch = !q || w.word.toLowerCase().includes(q) || w.meaning.toLowerCase().includes(q);
     const matchFilter = filter === 'all' || w.wordForm === filter;

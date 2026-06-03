@@ -8,9 +8,26 @@ export interface Word {
   ipa: string;
   meaning: string;
   example: string;
+  setName: string;
 }
 
-export const words: Word[] = [
+// ── Word sets registry ────────────────────────────────────────────────────
+export const WORD_SETS = {
+  ETS_2026_TEST1: { key: 'ETS_2026_TEST1', label: 'ETS 2026 — Test 1', count: 80 },
+  // ETS_2026_TEST2: { key: 'ETS_2026_TEST2', label: 'ETS 2026 — Test 2', count: 80 },
+} as const;
+
+export type WordSetKey = keyof typeof WORD_SETS;
+export const DEFAULT_SET: WordSetKey = 'ETS_2026_TEST1';
+
+export function getWordsBySet(set: string): Word[] {
+  return words.filter((w) => w.setName === set);
+}
+
+// ── Raw data — each set is a separate array ───────────────────────────────
+type RawWord = Omit<Word, 'setName'>;
+
+const TEST1: RawWord[] = [
   { id: 1,  word: "take place",      wordForm: "verb phrase",   ipa: "/teɪk pleɪs/",             meaning: "diễn ra",                         example: "The meeting will take place in the main conference room." },
   { id: 2,  word: "attendee",        wordForm: "noun",          ipa: "/ˌæt.enˈdiː/",             meaning: "người tham dự",                   example: "All attendees must sign in at the front desk." },
   { id: 3,  word: "antique",         wordForm: "noun / adj",    ipa: "/ænˈtiːk/",                meaning: "đồ cổ",                           example: "The hotel lobby is decorated with antique furniture." },
@@ -91,4 +108,15 @@ export const words: Word[] = [
   { id: 78, word: "compete",         wordForm: "verb",          ipa: "/kəmˈpiːt/",               meaning: "cạnh tranh",                      example: "Small businesses must compete effectively." },
   { id: 79, word: "instrumental",    wordForm: "adjective",     ipa: "/ˌɪn.strəˈmen.təl/",       meaning: "đóng vai trò quan trọng",         example: "Her support was instrumental in the project." },
   { id: 80, word: "combine",         wordForm: "verb",          ipa: "/kəmˈbaɪn/",               meaning: "kết hợp",                         example: "We plan to combine the two departments." },
+];
+
+// ── Thêm Test 2 ở đây khi có data ────────────────────────────────────────
+// const TEST2: RawWord[] = [
+//   { id: 81, word: "...", ... },
+// ];
+
+// ── Merged word list ──────────────────────────────────────────────────────
+export const words: Word[] = [
+  ...TEST1.map((w) => ({ ...w, setName: 'ETS_2026_TEST1' })),
+  // ...TEST2.map((w) => ({ ...w, setName: 'ETS_2026_TEST2' })),
 ];

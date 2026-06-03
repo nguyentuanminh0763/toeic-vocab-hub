@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { words } from '@/shared/lib/words';
+import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
 import { loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/study-storage';
 import type { StudyState } from '@/shared/types/study';
 
-export function useFlashcard() {
-  const [state, setState] = useState<StudyState>(defaultStudyState);
+export function useFlashcard(set: string = DEFAULT_SET) {
+  const deckWords = getWordsBySet(set);
+  const [state, setState] = useState<StudyState>(() => defaultStudyState(set));
   const [isFlipped, setIsFlipped] = useState(false);
   const [mounted, setMounted] = useState(false);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
@@ -14,7 +15,7 @@ export function useFlashcard() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-    const saved = loadStudyState();
+    const saved = loadStudyState(set);
     if (saved && saved.deck.length > 0) setState(saved);
 
     const loadVoices = () => { voicesRef.current = window.speechSynthesis.getVoices(); };
@@ -23,13 +24,13 @@ export function useFlashcard() {
     return () => window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
   }, []);
 
-  const currentWord = words.find((w) => w.id === state.deck[state.currentIdx]);
+  const currentWord = deckWords.find((w) => w.id === state.deck[state.currentIdx]);
   const isDone = !currentWord;
 
   const save = useCallback((s: StudyState) => {
     setState(s);
-    saveStudyState(s);
-  }, []);
+    saveStudyState(s, set);
+  }, [set]);
 
   const speak = useCallback(() => {
     if (!currentWord) return;
@@ -86,8 +87,8 @@ export function useFlashcard() {
 
   const restartAll = useCallback(() => {
     setIsFlipped(false);
-    save(defaultStudyState());
-  }, [save]);
+    save(defaultStudyState(set));
+  }, [save, set]);
 
   const startHardMode = useCallback(() => {
     if (state.hardSet.length === 0) return;
