@@ -31,7 +31,11 @@ export default function ProgressView({ set }: { set?: string }) {
           Tiếp tục học
         </Link>
         <button
-          onClick={resetProgress}
+          onClick={() => {
+            if (confirm('Reset toàn bộ tiến độ của bộ này?\nHành động không thể hoàn tác.')) {
+              resetProgress();
+            }
+          }}
           className="flex-1 py-3 rounded-xl border border-gray-200 bg-white text-gray-500 font-bold text-sm hover:border-red-300 hover:text-red-500 transition-colors"
         >
           Reset tiến độ
