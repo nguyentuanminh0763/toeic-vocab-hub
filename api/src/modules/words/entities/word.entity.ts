@@ -43,6 +43,14 @@ export class Word {
   @Column({ type: 'int', default: 0 })
   sort_order: number;
 
+  @ApiProperty({ enum: ['public', 'private'], default: 'public' })
+  @Column({ type: 'varchar', length: 16, default: 'public' })
+  visibility: 'public' | 'private';
+
+  @ApiPropertyOptional({ description: 'Owner — chỉ set với private words' })
+  @Column({ type: 'uuid', nullable: true, default: null })
+  user_id: string | null;
+
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
