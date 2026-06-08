@@ -32,13 +32,7 @@ export function saveStudyState(s: StudyState, set: string): void {
   localStorage.setItem(getStorageKey(set), JSON.stringify(s));
 }
 
-export function defaultStudyState(set: string): StudyState {
-  return {
-    okSet: [],
-    hardSet: [],
-    seenSet: [],
-    currentIdx: 0,
-    isHardMode: false,
-    deck: getWordsBySet(set).map((w) => w.id),
-  };
+export function defaultStudyState(set: string, wordIds?: number[]): StudyState {
+  const deck = wordIds ?? getWordsBySet(set).map((w) => w.id);
+  return { okSet: [], hardSet: [], seenSet: [], currentIdx: 0, isHardMode: false, deck };
 }

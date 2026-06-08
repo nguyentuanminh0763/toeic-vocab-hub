@@ -1,63 +1,90 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
+import { DEFAULT_SET } from '@/shared/lib/words';
+import { useWords } from '@/shared/hooks/useWords';
 import { loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/study-storage';
 import { saveSession } from '@/shared/lib/session-storage';
 import { isLoggedIn } from '@/shared/lib/auth-storage';
-import { syncWordProgress } from '@/services/progress.api';
+import { syncWordProgress, fetchAllProgress } from '@/services/progress.api';
 import { fetchWordUUIDs } from '@/services/words.api';
 import type { StudyState } from '@/shared/types/study';
 import type { StudySession } from '@/shared/types/session';
 
 export function useFlashcard(set: string = DEFAULT_SET) {
-  const deckWords = getWordsBySet(set);
+  const deckWords = useWords(set);
   const [state, setState] = useState<StudyState>(() => defaultStudyState(set));
   const [isFlipped, setIsFlipped] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [savedSession, setSavedSession] = useState<StudySession | null>(null);
+  const [savedSession] = useState<StudySession | null>(null);
   const sessionSavedRef = useRef(false);
   const uuidMapRef = useRef<Map<number, string>>(new Map());
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const saved = loadStudyState(set);
     if (saved && saved.deck.length > 0) setState(saved);
 
-    // Load word UUID map nếu đã login (để sync BE)
     if (isLoggedIn()) {
-      fetchWordUUIDs(set).then((map) => { uuidMapRef.current = map; });
+      Promise.all([fetchWordUUIDs(set), fetchAllProgress()]).then(
+        ([uuidMap, progress]) => {
+          uuidMapRef.current = uuidMap;
+
+          if (progress.length > 0 && uuidMap.size > 0) {
+            const reverseMap = new Map<string, number>(
+              [...uuidMap.entries()].map(([numId, uuid]) => [uuid, numId]),
+            );
+            const okSet = progress
+              .filter((p) => p.status === 'ok')
+              .map((p) => reverseMap.get(p.word_id))
+              .filter((id): id is number => id !== undefined);
+            const hardSet = progress
+              .filter((p) => p.status === 'hard')
+              .map((p) => reverseMap.get(p.word_id))
+              .filter((id): id is number => id !== undefined);
+
+            setState((prev) => {
+              // Backend là source of truth; giữ lại local-only marks (chưa sync)
+              const backendKnown = new Set([...okSet, ...hardSet]);
+              const localOnlyOk   = prev.okSet.filter((id) => !backendKnown.has(id));
+              const localOnlyHard = prev.hardSet.filter((id) => !backendKnown.has(id));
+              const merged = {
+                ...prev,
+                okSet:   [...okSet,   ...localOnlyOk],
+                hardSet: [...hardSet, ...localOnlyHard],
+              };
+              saveStudyState(merged, set);
+              return merged;
+            });
+          }
+        },
+      );
     }
 
     const loadVoices = () => { voicesRef.current = window.speechSynthesis.getVoices(); };
     loadVoices();
     window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
     return () => window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Khi deckWords có từ mới (private word vừa thêm), đưa ID vào deck
+  useEffect(() => {
+    if (!mounted) return;
+    setState((prev) => {
+      const deckSet = new Set(prev.deck);
+      const newIds = deckWords.map((w) => w.id).filter((id) => !deckSet.has(id));
+      if (newIds.length === 0) return prev;
+      const updated = { ...prev, deck: [...prev.deck, ...newIds] };
+      saveStudyState(updated, set);
+      return updated;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deckWords, mounted]);
 
   const currentWord = deckWords.find((w) => w.id === state.deck[state.currentIdx]);
   const isDone = !currentWord;
-
-  // Auto-save session khi xong deck lần đầu
-  useEffect(() => {
-    if (!isDone || !mounted || sessionSavedRef.current) return;
-    sessionSavedRef.current = true;
-    const session: StudySession = {
-      id: `${set}_${Date.now()}`,
-      setName: set,
-      date: new Date().toISOString(),
-      total: state.deck.length,
-      ok: state.okSet.length,
-      hard: state.hardSet.length,
-      okIds: [...state.okSet],
-      hardIds: [...state.hardSet],
-      isHardMode: state.isHardMode,
-    };
-    saveSession(set, session);
-    setSavedSession(session);
-  }, [isDone, mounted, set, state]);
 
   const save = useCallback((s: StudyState) => {
     setState(s);
@@ -87,9 +114,28 @@ export function useFlashcard(set: string = DEFAULT_SET) {
 
   const advance = useCallback((ns: StudyState) => {
     setIsFlipped(false);
-    const nextIdx = ns.currentIdx < ns.deck.length - 1 ? ns.currentIdx + 1 : ns.deck.length;
-    save({ ...ns, currentIdx: nextIdx });
-  }, [save]);
+    const atEnd = ns.currentIdx >= ns.deck.length - 1;
+
+    // Auto-save session khi xong lượt đầu
+    if (atEnd && !sessionSavedRef.current && ns.deck.length > 0) {
+      sessionSavedRef.current = true;
+      const session: StudySession = {
+        id: `${set}_${Date.now()}`,
+        setName: set,
+        date: new Date().toISOString(),
+        total: ns.deck.length,
+        ok: ns.okSet.length,
+        hard: ns.hardSet.length,
+        okIds: [...ns.okSet],
+        hardIds: [...ns.hardSet],
+        isHardMode: ns.isHardMode,
+      };
+      saveSession(set, session);
+    }
+
+    // Quay về từ đầu thay vì hiện màn hình "Hoàn thành"
+    save({ ...ns, currentIdx: atEnd ? 0 : ns.currentIdx + 1 });
+  }, [save, set]);
 
   const mark = useCallback((type: 'ok' | 'hard') => {
     if (!currentWord) return;
@@ -101,7 +147,6 @@ export function useFlashcard(set: string = DEFAULT_SET) {
       hardSet: type === 'hard' ? [...state.hardSet.filter((x) => x !== id), id] : state.hardSet.filter((x) => x !== id),
     };
     advance(ns);
-    // Sync to BE fire-and-forget
     const uuid = uuidMapRef.current.get(id);
     if (uuid) syncWordProgress(uuid, type);
   }, [currentWord, state, advance]);
@@ -123,7 +168,6 @@ export function useFlashcard(set: string = DEFAULT_SET) {
   const restartAll = useCallback(() => {
     sessionSavedRef.current = false;
     setIsFlipped(false);
-    // Giữ lại okSet và hardSet — chỉ reset vị trí và seenSet
     save({
       ...state,
       seenSet: [],
@@ -131,7 +175,7 @@ export function useFlashcard(set: string = DEFAULT_SET) {
       isHardMode: false,
       deck: deckWords.map((w) => w.id),
     });
-  }, [state, save, set, deckWords]);
+  }, [state, save, deckWords]);
 
   const startHardMode = useCallback((hardIds?: number[]) => {
     const ids = hardIds ?? state.hardSet;

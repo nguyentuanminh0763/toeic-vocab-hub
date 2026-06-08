@@ -9,6 +9,7 @@ export interface Word {
   meaning: string;
   example: string;
   setName: string;
+  isPrivate?: boolean;
 }
 
 // ── Word sets registry ────────────────────────────────────────────────────

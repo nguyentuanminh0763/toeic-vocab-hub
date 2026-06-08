@@ -1,7 +1,8 @@
 'use client';
 
-import { getWordsBySet, DEFAULT_SET, WORD_SETS } from '@/shared/lib/words';
+import { DEFAULT_SET, WORD_SETS } from '@/shared/lib/words';
 import { useFlashcard } from '../hooks/useFlashcard';
+import AddNoteButton from '@/features/notes/components/AddNoteButton';
 
 const SpeakIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -125,7 +126,12 @@ export default function Flashcard({ set = DEFAULT_SET }: { set?: string }) {
                 </button>
               </div>
               <div className="text-sm text-gray-500 italic mb-2">{currentWord.ipa}</div>
-              <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-[#EAE8F9] text-[#534AB7] w-fit">{currentWord.wordForm}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-[#EAE8F9] text-[#534AB7]">{currentWord.wordForm}</span>
+                {currentWord.isPrivate && (
+                  <span className="inline-block text-xs font-bold px-2.5 py-1 rounded-full bg-[#534AB7] text-white">Riêng tư</span>
+                )}
+              </div>
               <div className="mt-auto text-center text-xs text-gray-400 opacity-70 pt-4 border-t border-dashed border-gray-200">
                 Nhấn thẻ để xem nghĩa &nbsp;·&nbsp; <kbd className="bg-gray-100 border border-gray-200 rounded px-1 font-mono">Space</kbd>
               </div>
@@ -167,6 +173,11 @@ export default function Flashcard({ set = DEFAULT_SET }: { set?: string }) {
           <button onClick={toggleMode} className="px-4 py-2.5 rounded-xl bg-[#534AB7] text-white text-sm font-semibold hover:bg-[#443fa0] transition-colors whitespace-nowrap md:hidden">
             {state.isHardMode ? 'Học tất cả' : 'Ôn từ khó'}
           </button>
+        </div>
+
+        {/* Add private word — mobile only */}
+        <div className="md:hidden">
+          <AddNoteButton set={set} />
         </div>
 
         {/* Keyboard hint — mobile */}
@@ -216,6 +227,9 @@ export default function Flashcard({ set = DEFAULT_SET }: { set?: string }) {
         <button onClick={toggleMode} className="w-full py-3 rounded-xl bg-[#534AB7] text-white text-sm font-semibold hover:bg-[#443fa0] transition-colors">
           {state.isHardMode ? 'Học tất cả' : 'Ôn từ khó'}
         </button>
+
+        {/* Add private word — desktop sidebar */}
+        <AddNoteButton set={set} />
 
         {/* Keyboard hints */}
         <div className="bg-white rounded-2xl shadow-sm p-5">

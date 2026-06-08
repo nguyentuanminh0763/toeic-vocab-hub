@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
+import { DEFAULT_SET } from '@/shared/lib/words';
+import { useWords } from '@/shared/hooks/useWords';
 import { loadStudyState, saveStudyState, defaultStudyState } from '@/shared/lib/study-storage';
 import type { StudyState } from '@/shared/types/study';
 
@@ -18,13 +19,12 @@ export interface ProgressStats {
 }
 
 export function useProgress(set: string = DEFAULT_SET) {
-  const deckWords = getWordsBySet(set);
-
+  const deckWords = useWords(set);
   const [state, setState] = useState<StudyState | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setState(loadStudyState(set) ?? defaultStudyState(set));
+    setState(loadStudyState(set) ?? defaultStudyState(set, deckWords.map((w) => w.id)));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [set]);
 
   const stats: ProgressStats | null = state
@@ -42,7 +42,7 @@ export function useProgress(set: string = DEFAULT_SET) {
   const hardWords = state ? deckWords.filter((w) => state.hardSet.includes(w.id)) : [];
 
   function resetProgress() {
-    const fresh = defaultStudyState(set);
+    const fresh = defaultStudyState(set, deckWords.map((w) => w.id));
     saveStudyState(fresh, set);
     setState(fresh);
   }

@@ -95,15 +95,20 @@ export default function ProgressView({ set }: { set?: string }) {
         <div className="flex flex-col gap-2">
           <h2 className="text-sm font-bold text-[#712B13]">Từ cần ôn ({hardWords.length})</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {hardWords.map((w) => (
-            <div key={w.id} className="bg-[#FAECE7] rounded-xl px-4 py-3 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-gray-900 text-sm">{w.word}</span>
-                <span className="text-xs text-[#712B13] ml-2">{w.meaning}</span>
+            {hardWords.map((w) => (
+              <div key={w.id} className="bg-[#FAECE7] rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-gray-900 text-sm">{w.word}</span>
+                    {w.isPrivate && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#534AB7] text-white">Riêng tư</span>
+                    )}
+                  </div>
+                  <span className="text-xs text-[#712B13]">{w.meaning}</span>
+                  {w.ipa && <span className="text-xs text-gray-400 font-mono ml-1">{w.ipa}</span>}
+                </div>
               </div>
-              <span className="text-xs text-gray-400 font-mono">{w.ipa}</span>
-            </div>
-          ))}
+            ))}
           </div>
         </div>
       )}

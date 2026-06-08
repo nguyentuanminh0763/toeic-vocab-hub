@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { words, getWordsBySet, DEFAULT_SET } from '@/shared/lib/words';
+import { DEFAULT_SET } from '@/shared/lib/words';
+import { useWords } from '@/shared/hooks/useWords';
 
 export const FORM_COLORS: Record<string, string> = {
   noun:           'bg-blue-50 text-blue-700',
@@ -18,7 +19,7 @@ export function formColor(form: string) {
 }
 
 export function useWordList(set: string = DEFAULT_SET) {
-  const deckWords = getWordsBySet(set);
+  const deckWords = useWords(set);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 

@@ -10,7 +10,7 @@ export default function Quiz({ set }: { set?: string }) {
 
   return (
     <div className="flex flex-col items-center w-full">
-      {screen === 'setup' && <SetupScreen onStart={startQuiz} />}
+      {screen === 'setup' && <SetupScreen set={set} onStart={startQuiz} />}
       {screen === 'quiz' && questions[qIndex] && (
         <QuestionScreen
           key={qIndex}

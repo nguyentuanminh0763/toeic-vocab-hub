@@ -7,6 +7,7 @@ import { getActiveSet } from '@/shared/lib/active-set';
 import { WORD_SETS } from '@/shared/lib/words';
 import { getUser, clearAuth } from '@/shared/lib/auth-storage';
 import type { AuthUser } from '@/shared/lib/auth-storage';
+import { clearAllWordsCache } from '@/shared/hooks/useWords';
 
 const links = [
   { href: '/study',    label: 'Flashcard' },
@@ -72,7 +73,7 @@ export default function NavBar() {
                   {user.full_name ?? user.email.split('@')[0]}
                 </span>
                 <button
-                  onClick={() => { clearAuth(); setUser(null); }}
+                  onClick={() => { clearAuth(); clearAllWordsCache(); setUser(null); }}
                   className="text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1"
                   title="Đăng xuất"
                 >
