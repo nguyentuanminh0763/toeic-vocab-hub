@@ -1,48 +1,50 @@
-# DayPilot — chạy Postgres + API trên máy bạn
+# TOEIC Vocab — chạy Postgres + API trên máy local
 # Cách dùng (tại thư mục gốc repo):
 #   docker compose up --build
 # API: http://localhost:3000  |  Swagger: http://localhost:3000/api
-# Frontend vẫn chạy riêng: cd frontend && npm run dev
+# Frontend: cd web && npm run dev  →  http://localhost:3001
 
 services:
   db:
     image: postgres:16-alpine
-    container_name: daypilot-db
+    container_name: toeic-vocab-db
     environment:
-      POSTGRES_USER: daypilot
-      POSTGRES_PASSWORD: daypilot_local
-      POSTGRES_DB: daypilot
+      POSTGRES_USER: toeic
+      POSTGRES_PASSWORD: toeic_local
+      POSTGRES_DB: toeic_vocab
     ports:
       - "5432:5432"
     volumes:
-      - daypilot_pgdata:/var/lib/postgresql/data
+      - toeic_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U daypilot -d daypilot"]
+      test: ["CMD-SHELL", "pg_isready -U toeic -d toeic_vocab"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   api:
     build:
-      context: ./backend
+      context: ./api
       dockerfile: Dockerfile
-    container_name: daypilot-api
+    container_name: toeic-vocab-api
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
-      CORS_ORIGIN: http://localhost:5173
+      CORS_ORIGIN: http://localhost:3001
       DB_HOST: db
       DB_PORT: 5432
-      DB_USERNAME: daypilot
-      DB_PASSWORD: daypilot_local
-      DB_DATABASE: daypilot
-      # Dev/local: true. Production: false + dùng migration.
-      DB_SYNCHRONIZE: "true"
+      DB_USERNAME: toeic
+      DB_PASSWORD: toeic_local
+      DB_DATABASE: toeic_vocab
+      # false cho production — dùng migration thay vì auto-sync
+      DB_SYNCHRONIZE: "false"
+      # BẮT BUỘC override bằng secret thật khi deploy lên server thật
+      JWT_SECRET: change_me_to_a_long_random_string
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
-  daypilot_pgdata:
+  toeic_pgdata:

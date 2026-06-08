@@ -9,6 +9,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { SpendingModule } from './modules/spending/spending.module';
 import { WordsModule } from './modules/words/words.module';
 import { ProgressModule } from './modules/progress/progress.module';
+import { NotesModule } from './modules/notes/notes.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ProgressModule } from './modules/progress/progress.module';
     SpendingModule,
     WordsModule,
     ProgressModule,
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
